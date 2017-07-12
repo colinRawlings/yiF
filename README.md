@@ -26,7 +26,7 @@ https://pickandplace.wordpress.com/2011/10/05/canon-ef-s-protocol-and-electronic
 from here I used a Saleae logic analyser to record the conversations between the lenses and a 650D.  These were then analysed in Matlab since in particular I needed the command to start the image stabilisation motor.
 
 
-![assy](doc/media/screen_assy.png)
+![assy](doc/media/anim.gif)
 
 
 ## code
