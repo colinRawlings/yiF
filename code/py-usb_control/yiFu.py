@@ -1,4 +1,4 @@
-class EFu(object):
+class yiFu(object):
     def __init__(self, addr=None, verbose_mode=False):
         import serial
 
@@ -148,7 +148,7 @@ class EFu(object):
     def get_EFu_addr(self):
         """
 
-        assumes that the EFu is the device attached to /dev/tty.usbmodem####
+        assumes that the yiFu is the device attached to /dev/tty.usbmodem####
 
         function for opening the serial port
 
@@ -208,9 +208,7 @@ class EFu(object):
 
         import time
 
-        # --- variables
-        if cmd_str[len(cmd_str) - 1] != '\r':
-            cmd_str = cmd_str + '\r'  # ard waits for the return before processing the command
+        self.ser.flushInput()
 
         if not self.ser.isOpen():
             raise RuntimeError('Serial port is closed')
@@ -257,7 +255,7 @@ class EFu(object):
 
         for byte in cmd_list:
             cmd_str = cmd_str + byte + ','
-        cmd_str = cmd_str[0:len(cmd_str) - 2]
+        cmd_str = cmd_str[0:len(cmd_str) - 1]
 
         # --- write
         response = self.serial_wr(cmd_str)
@@ -265,25 +263,35 @@ class EFu(object):
         # --- parse response
         result = self.parse_lens_response_str(response)
 
+        response_error = False
+        if (len(result['MOSI']) != len(cmd_list)) \
+                or (len(result['MISO']) != len(cmd_list)):
+            response_error = True
+
+        # --- handle error
         if result['timedOut']:
             print('Command timed out')
 
-        if self.verbose or result['timedOut']:
+        if self.verbose or result['timedOut'] or result["interface_error"] or response_error:
             for line in result['return_str']:
                 disp_line = line.replace('\n', '')
                 print(disp_line)
+
+        if result['timedOut'] or result["interface_error"] or response_error:
+            raise RuntimeError()
 
         return result
 
     @staticmethod
     def parse_lens_response_str(response):
         """
-        analyse the list of strings provided by EFu following the transmission of a lens command
+        analyse the list of strings provided by yiFu following the transmission of a lens command
 
-        :param response: list of strings (one per line) of data returned by EFu after the transmission of a lens command
+        :param response: list of strings (one per line) of data returned by yiFu after the transmission of a lens command
         :return: a dictionary summarising the result of the command
                     - list of strings: 'MOSI' and 'MISO'
                     - boolean: 'timedOut'
+                    - boolean: 'lens_error' lens reports an error
                     - boolean: 'fastMode'
                     - list of strings: 'return_str' (copy of the input returned by the serial port)
 
@@ -291,17 +299,22 @@ class EFu(object):
 
         import re
 
-        result = dict(MOSI=[], MISO=[], timedOut=False)
+        result = dict(MOSI=[], MISO=[], timedOut=False, interface_error=False)
         result['return_str'] = response
 
         for line in response:
+
+            if "Error" in line:
+                result["interface_error"] = True
 
             if 'Timed out' in line:
                 result['timedOut'] = True
 
             if 'fast mode' in line:
-                RX = re.search('fast mode: (?P<fm>[01])', line)
-                result['fastMode'] = RX.group('fm')
+                result['fastMode'] = 1
+
+            if 'slow mode' in line:
+                result['fastMode'] = 0
 
             for ch in ['MOSI', 'MISO']:
                 if ch in line:
@@ -392,5 +405,3 @@ class EFu(object):
 
         response = self.send_lens_cmd(['05', '00', '00', '00'], fast_mode=True)
         self.wait_focus_move()
-
-
