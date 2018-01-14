@@ -27,8 +27,8 @@ https://pickandplace.wordpress.com/2011/10/05/canon-ef-s-protocol-and-electronic
 
 from here I used a Saleae logic analyser to record the conversations between the lenses and a 650D.  These were then analysed in Matlab since in particular I needed the command to start the image stabilisation motor and activate the manual focus ring (the STM lenses are “focus by wire”).
 
+[![assembly](doc/media/assy.png)](https://vimeo.com/248812464)
 
-![assy](doc/media/anim.gif)
 
 
 ## code
@@ -44,7 +44,7 @@ This comes in several parts
 
 The cad was done in Fusion (free for the first year).  The assembly is here: http://a360.co/2sxdWEE
 
-the stl files for printing are in cad/fab.  They are only suitable for selective laser sintering of nylon.  I used [3Dhubs.com](https://www.3dhubs.com) to find a nearby printer.
+the stl files for printing are in cad/fab.  They are only suitable for selective laser sintering or HP jet fusion of nylon.  I used [3Dhubs.com](https://www.3dhubs.com) to find a nearby printer.
 
 
 ## electronics
